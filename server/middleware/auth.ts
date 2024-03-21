@@ -22,10 +22,10 @@ async function checkLoggedIn(req: Request, res: Response, next: NextFunction) {
         .cookie("state", state, secureCookieConfig)
         .cookie("nonce", nonce, secureCookieConfig)
         .redirect(
-            `/login${client.authorizationUrl({
+            client.authorizationUrl({
                 state,
                 nonce,
-            })}`
+            })
         );
     }
 }

@@ -25,7 +25,7 @@ async function setupOpenID() {
         signed: true,
     };
 
-    return { client, secureCookieConfig };
+    return { client, cookieSecret secureCookieConfig };
 }
 
 export default setupOpenID;
