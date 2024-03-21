@@ -14,11 +14,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const openid_client_1 = require("openid-client");
 const openid_1 = __importDefault(require("../utils/openid"));
-function checkLoggedIn(req, res, next) {
+const getuser_1 = require("../routes/getuser");
+function checkLoggedIn(req, res, next, callback) {
     return __awaiter(this, void 0, void 0, function* () {
         const { client, secureCookieConfig } = yield (0, openid_1.default)();
-        const state = openid_client_1.generators.state();
-        const nonce = openid_client_1.generators.nonce();
+        callback(client, secureCookieConfig);
+        (0, getuser_1.setClient)(client);
+        secureCookieConfig;
         if (req.signedCookies.tokenSet) {
             // User is logged in. Refresh tokens if expired
             let tokenSet = new openid_client_1.TokenSet(req.signedCookies.tokenSet);
@@ -29,7 +31,9 @@ function checkLoggedIn(req, res, next) {
             next();
         }
         else {
-            // User is not logged in. Redirect to login page.
+            // User is not logged in.
+            const state = openid_client_1.generators.state();
+            const nonce = openid_client_1.generators.nonce();
             res
                 .cookie("state", state, secureCookieConfig)
                 .cookie("nonce", nonce, secureCookieConfig)

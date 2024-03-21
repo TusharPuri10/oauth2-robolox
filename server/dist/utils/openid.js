@@ -17,13 +17,12 @@ function setupOpenID() {
         const port = process.env.ROBLOX_PORT || 3000;
         const clientId = process.env.ROBLOX_CLIENT_ID;
         const clientSecret = process.env.ROBLOX_CLIENT_SECRET;
-        console.log(clientId);
         const client = new issuer.Client({
             client_id: clientId,
             client_secret: clientSecret,
             redirect_uris: [`http://localhost:${port}/oauth/callback`],
             response_types: ["code"],
-            scope: "openid profile",
+            scope: "profile",
             id_token_signed_response_alg: "ES256",
         });
         const secureCookieConfig = {

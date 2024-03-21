@@ -15,7 +15,7 @@ async function setupOpenID() {
         client_secret: clientSecret!,
         redirect_uris: [`http://localhost:${port}/oauth/callback`],
         response_types: ["code"],
-        scope: "openid profile",
+        scope: "profile",
         id_token_signed_response_alg: "ES256",
     });
 
@@ -25,7 +25,7 @@ async function setupOpenID() {
         signed: true,
     };
 
-    return { client, cookieSecret secureCookieConfig };
+    return { client, secureCookieConfig };
 }
 
 export default setupOpenID;

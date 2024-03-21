@@ -1,33 +1,51 @@
-import {Request ,Response ,NextFunction} from 'express';
+import { Request, Response, NextFunction } from "express";
 import { TokenSet, generators } from "openid-client";
-import setupOpenID from '../utils/openid';
+import setupOpenID from "../utils/openid";
+import { BaseClient } from "openid-client";
+import { setClient, setSecureCookieConfig } from "../routes/getuser";
 
-async function checkLoggedIn(req: Request, res: Response, next: NextFunction) {
-    const { client, secureCookieConfig } = await setupOpenID();
+async function checkLoggedIn(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+  callback: (
+    client: BaseClient,
+    secureCookieConfig: {
+      secure: boolean;
+      httpOnly: boolean;
+      signed: boolean;
+    }
+  ) => void
+) {
+  const { client, secureCookieConfig } = await setupOpenID();
+  callback(client, secureCookieConfig);
+  setClient(client);
+  secureCookieConfig;
+
+  if (req.signedCookies.tokenSet) {
+    // User is logged in. Refresh tokens if expired
+    let tokenSet = new TokenSet(req.signedCookies.tokenSet);
+
+    if (tokenSet.expired()) {
+      tokenSet = await client.refresh(tokenSet);
+      res.cookie("tokenSet", tokenSet, secureCookieConfig);
+    }
+
+    next();
+  } else {
+    // User is not logged in.
     const state = generators.state();
     const nonce = generators.nonce();
-    if (req.signedCookies.tokenSet) {
-        // User is logged in. Refresh tokens if expired
-        let tokenSet = new TokenSet(req.signedCookies.tokenSet);
-
-        if (tokenSet.expired()) {
-            tokenSet = await client.refresh(tokenSet);
-            res.cookie("tokenSet", tokenSet, secureCookieConfig);
-        }
-
-        next();
-    } else {
-        // User is not logged in. Redirect to login page.
-        res
-        .cookie("state", state, secureCookieConfig)
-        .cookie("nonce", nonce, secureCookieConfig)
-        .redirect(
-            client.authorizationUrl({
-                state,
-                nonce,
-            })
-        );
-    }
+    res
+      .cookie("state", state, secureCookieConfig)
+      .cookie("nonce", nonce, secureCookieConfig)
+      .redirect(
+        client.authorizationUrl({
+          state,
+          nonce,
+        })
+      );
+  }
 }
 
 export default checkLoggedIn;
