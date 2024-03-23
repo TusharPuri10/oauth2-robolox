@@ -13,31 +13,31 @@ git clone https://github.com/TusharPuri10/oauth2-robolox
 ```
 
 ### 2. Install Dependencies
-* Navigate to the roblox-app directory (React frontend)
+Navigate to the roblox-app directory (React frontend)
 ```bash
 cd roblox-app
 npm install
 ```
 
-* Navigate to the server directory (Node.js backend)
+Navigate to the server directory (Node.js backend)
 ```bash
 cd server
 npm install
 ```
 ### 3. Compile and add .env 
-* compile
+compile
 ```bash
 cd server
 tsc
 ```
-* Add ROBLOX_CLIENT_ID and ROBLOX_CLIENT_SECRET in .env inside dist folder
+Add ROBLOX_CLIENT_ID and ROBLOX_CLIENT_SECRET in .env inside dist folder
 
 ### 4. Start the Development Servers
-* In the roblox-app directory (React frontend)
+In the roblox-app directory (React frontend)
 ```bash
 npm run dev
 ```
-* In the server/dist directory (Node.js backend)
+In the server/dist directory (Node.js backend)
 ```bash
 node index.js
 ```
