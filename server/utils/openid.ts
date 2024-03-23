@@ -1,4 +1,4 @@
-import { Issuer } from "openid-client";
+import { Issuer, custom } from "openid-client";
 import 'dotenv/config'
 
 async function setupOpenID() {
@@ -15,9 +15,11 @@ async function setupOpenID() {
         client_secret: clientSecret!,
         redirect_uris: [`http://localhost:${port}/oauth/callback`],
         response_types: ["code"],
-        scope: "profile",
+        scope: "openid profile",
         id_token_signed_response_alg: "ES256",
     });
+
+    client[custom.clock_tolerance] = 180;
 
     const secureCookieConfig = {
         secure: true,

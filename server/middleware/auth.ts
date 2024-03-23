@@ -20,7 +20,7 @@ async function checkLoggedIn(
   const { client, secureCookieConfig } = await setupOpenID();
   callback(client, secureCookieConfig);
   setClient(client);
-  secureCookieConfig;
+  setSecureCookieConfig(secureCookieConfig);
 
   if (req.signedCookies.tokenSet) {
     // User is logged in. Refresh tokens if expired
@@ -36,15 +36,16 @@ async function checkLoggedIn(
     // User is not logged in.
     const state = generators.state();
     const nonce = generators.nonce();
-    res
-      .cookie("state", state, secureCookieConfig)
-      .cookie("nonce", nonce, secureCookieConfig)
-      .redirect(
-        client.authorizationUrl({
+
+    // Redirect the authorization URL to frontend
+      res.json({
+        redirectToAuth: true,
+        authorizationUrl: client.authorizationUrl({
+          scope: client.scope as string,
           state,
           nonce,
-        })
-      );
+        }),
+      });
   }
 }
 

@@ -20,7 +20,7 @@ function checkLoggedIn(req, res, next, callback) {
         const { client, secureCookieConfig } = yield (0, openid_1.default)();
         callback(client, secureCookieConfig);
         (0, getuser_1.setClient)(client);
-        secureCookieConfig;
+        (0, getuser_1.setSecureCookieConfig)(secureCookieConfig);
         if (req.signedCookies.tokenSet) {
             // User is logged in. Refresh tokens if expired
             let tokenSet = new openid_client_1.TokenSet(req.signedCookies.tokenSet);
@@ -34,13 +34,15 @@ function checkLoggedIn(req, res, next, callback) {
             // User is not logged in.
             const state = openid_client_1.generators.state();
             const nonce = openid_client_1.generators.nonce();
-            res
-                .cookie("state", state, secureCookieConfig)
-                .cookie("nonce", nonce, secureCookieConfig)
-                .redirect(client.authorizationUrl({
-                state,
-                nonce,
-            }));
+            // Redirect the authorization URL to frontend
+            res.json({
+                redirectToAuth: true,
+                authorizationUrl: client.authorizationUrl({
+                    scope: client.scope,
+                    state,
+                    nonce,
+                }),
+            });
         }
     });
 }

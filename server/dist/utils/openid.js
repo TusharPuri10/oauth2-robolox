@@ -22,9 +22,10 @@ function setupOpenID() {
             client_secret: clientSecret,
             redirect_uris: [`http://localhost:${port}/oauth/callback`],
             response_types: ["code"],
-            scope: "profile",
+            scope: "openid profile",
             id_token_signed_response_alg: "ES256",
         });
+        client[openid_client_1.custom.clock_tolerance] = 180;
         const secureCookieConfig = {
             secure: true,
             httpOnly: true,

@@ -21,6 +21,11 @@ const openid_client_1 = require("openid-client");
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const auth_1 = __importDefault(require("./middleware/auth"));
 const app = (0, express_1.default)();
+// Middlwware allows request from everywhere (not for production ready backend, just for testing)
+app.use((0, cors_1.default)({
+    origin: "http://localhost:5173",
+    credentials: true,
+}));
 // Generating a new secret at runtime invalidates existing cookies if the server restarts.
 // Set your own constant cookie secret if you want to keep them alive despite server restarting.
 const cookieSecret = process.env.COOKIE_SECRET || openid_client_1.generators.random();
@@ -31,11 +36,6 @@ let callbackSecureCookieConfig;
 app.use((0, cookie_parser_1.default)(cookieSecret));
 // Middleware to parse data from HTML forms
 app.use(express_1.default.urlencoded({ extended: true }));
-// Middlwware allows request from everywhere (not for production ready backend, just for testing)
-app.use((0, cors_1.default)({
-    origin: "*",
-    credentials: true,
-}));
 // Middleware to parse JSON-formatted data in incoming requests
 app.use(body_parser_1.default.json());
 // Define a callback function to handle client and secureCookieConfig
@@ -47,6 +47,14 @@ function handleLoggedIn(client, secureCookieConfig) {
 app.use("/user", (req, res, next) => {
     (0, auth_1.default)(req, res, next, handleLoggedIn);
 }, getuser_1.default);
+function parseCookies(cookieString) {
+    const cookies = {};
+    cookieString.split(';').forEach(cookie => {
+        const [key, value] = cookie.trim().split('=');
+        cookies[key] = value;
+    });
+    return cookies;
+}
 // Define the /oauth/callback route
 app.get("/oauth/callback", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -54,48 +62,29 @@ app.get("/oauth/callback", (req, res) => __awaiter(void 0, void 0, void 0, funct
         if (!callbackClient || !callbackSecureCookieConfig) {
             throw new Error("Client or secureCookieConfig not available");
         }
+        const cookieString = req.headers.cookie;
+        const cookies = parseCookies(cookieString);
+        // Retrieve state and nonce from signed cookies
+        const state = cookies.state;
+        const nonce = cookies.nonce;
+        // Check if state is missing
+        if (!state) {
+            throw new Error("State cookie is missing");
+        }
         const params = callbackClient.callbackParams(req);
         const tokenSet = yield callbackClient.callback(`http://localhost:${port}/oauth/callback`, params, {
-            state: req.signedCookies.state,
-            nonce: req.signedCookies.nonce,
+            state: state,
+            nonce: nonce,
         });
         // Store user details in the userData and session tokens in their respective cookies
         res
             .cookie("tokenSet", tokenSet, callbackSecureCookieConfig)
             .clearCookie("state")
             .clearCookie("nonce")
-            .redirect("/home");
+            .redirect("http://localhost:5173/");
     }
     catch (error) {
         console.error("Error in /oauth/callback route:", error);
-        res.status(500).send("Internal Server Error");
-    }
-}));
-app.post("/message", (req, res, next) => {
-    (0, auth_1.default)(req, res, next, handleLoggedIn);
-}, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        // Ensure callbackClient is set before handling the route
-        if (!callbackClient) {
-            return res
-                .status(500)
-                .json({ error: "Callback client instance not set" });
-        }
-        const message = req.body.message;
-        const apiUrl = `https://apis.roblox.com/messaging-service/v1/universes/${req.body.universeId}/topics/${req.body.topic}`;
-        // Send the message using the access token for authorization
-        const result = yield callbackClient.requestResource(apiUrl, req.signedCookies.tokenSet.access_token, {
-            method: "POST",
-            body: JSON.stringify({ message }),
-            headers: {
-                "Content-Type": "application/json",
-            },
-        });
-        console.log(result);
-        res.sendStatus(result.statusCode);
-    }
-    catch (error) {
-        console.error("Error in /message route:", error);
         res.status(500).send("Internal Server Error");
     }
 }));

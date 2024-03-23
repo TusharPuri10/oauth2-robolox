@@ -16,8 +16,10 @@ exports.setSecureCookieConfig = setSecureCookieConfig;
 // Middleware to ensure secureCookieConfig instance is set
 const ensureSecureCookieConfig = (req, res, next) => {
     if (!secureCookieConfig) {
-        console.error('Error: secureCookieConfig instance not set');
-        return res.status(500).json({ error: 'secureCookieConfig instance not set' });
+        console.error("Error: secureCookieConfig instance not set");
+        return res
+            .status(500)
+            .json({ error: "secureCookieConfig instance not set" });
     }
     next();
 };
@@ -30,8 +32,8 @@ exports.setClient = setClient;
 // Middleware to ensure client instance is set
 const ensureClient = (req, res, next) => {
     if (!client) {
-        console.error('Error: Client instance not set');
-        return res.status(500).json({ error: 'Client instance not set' });
+        console.error("Error: Client instance not set");
+        return res.status(500).json({ error: "Client instance not set" });
     }
     next();
 };
@@ -40,7 +42,11 @@ exports.ensureClient = ensureClient;
 router.get("/info", exports.ensureClient, exports.ensureSecureCookieConfig, (req, res) => {
     const tokenSet = new openid_client_1.TokenSet(req.signedCookies.tokenSet);
     // Response with user information from the token claims
-    res.json(tokenSet.claims());
+    const userinfo = tokenSet.claims();
+    res.json({
+        redirectToAuth: false,
+        userinfo,
+    });
 });
 // Route for logout
 router.get("/logout", exports.ensureClient, exports.ensureSecureCookieConfig, (req, res) => {

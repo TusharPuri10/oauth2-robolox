@@ -1,6 +1,6 @@
 import './App.css'
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { Signin } from './components/Signin';
+import { Userprofile } from './components/Userprofile';
 function App() {
   
 
@@ -9,8 +9,7 @@ function App() {
       <BrowserRouter basename="/">
           <div className="scroll">
             <Routes>
-              <Route path="/" element={<Signin/>} />
-              <Route path="/dashboard" element={<div className='dashboard'> signed in succesfully </div>} />
+              <Route path="/" element={<Userprofile/>} />
             </Routes>
           </div>
         </BrowserRouter>
