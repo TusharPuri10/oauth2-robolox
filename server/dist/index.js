@@ -47,14 +47,14 @@ function handleLoggedIn(client, secureCookieConfig) {
 app.use("/user", (req, res, next) => {
     (0, auth_1.default)(req, res, next, handleLoggedIn);
 }, getuser_1.default);
-function parseCookies(cookieString) {
-    const cookies = {};
-    cookieString.split(';').forEach(cookie => {
-        const [key, value] = cookie.trim().split('=');
-        cookies[key] = value;
-    });
-    return cookies;
-}
+// function parseCookies(cookieString: string): Record<string, string> {
+//   const cookies: Record<string, string> = {};
+//   cookieString.split(';').forEach(cookie => {
+//     const [key, value] = cookie.trim().split('=');
+//     cookies[key] = value;
+//   });
+//   return cookies;
+// }
 // Define the /oauth/callback route
 app.get("/oauth/callback", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -62,11 +62,11 @@ app.get("/oauth/callback", (req, res) => __awaiter(void 0, void 0, void 0, funct
         if (!callbackClient || !callbackSecureCookieConfig) {
             throw new Error("Client or secureCookieConfig not available");
         }
-        const cookieString = req.headers.cookie;
-        const cookies = parseCookies(cookieString);
+        // const cookieString = req.headers.cookie;
+        // const cookies = parseCookies(cookieString!);
         // Retrieve state and nonce from signed cookies
-        const state = cookies.state;
-        const nonce = cookies.nonce;
+        const state = req.signedCookies.state;
+        const nonce = req.signedCookies.nonce;
         // Check if state is missing
         if (!state) {
             throw new Error("State cookie is missing");

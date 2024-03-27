@@ -37,15 +37,16 @@ async function checkLoggedIn(
     const state = generators.state();
     const nonce = generators.nonce();
 
-    // Redirect the authorization URL to frontend
-      res.json({
-        redirectToAuth: true,
-        authorizationUrl: client.authorizationUrl({
-          scope: client.scope as string,
-          state,
-          nonce,
-        }),
-      });
+    res
+            .cookie("state", state, secureCookieConfig)
+            .cookie("nonce", nonce, secureCookieConfig)
+            .redirect(
+                client.authorizationUrl({
+                    scope: client.scope as string,
+                    state,
+                    nonce,
+                })
+            );
   }
 }
 

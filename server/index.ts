@@ -63,15 +63,6 @@ app.use(
   getUser
 );
 
-function parseCookies(cookieString: string): Record<string, string> {
-  const cookies: Record<string, string> = {};
-  cookieString.split(';').forEach(cookie => {
-    const [key, value] = cookie.trim().split('=');
-    cookies[key] = value;
-  });
-  return cookies;
-}
-
 // Define the /oauth/callback route
 app.get("/oauth/callback", async (req: Request, res: Response) => {
   try {
@@ -80,12 +71,9 @@ app.get("/oauth/callback", async (req: Request, res: Response) => {
       throw new Error("Client or secureCookieConfig not available");
     }
 
-    const cookieString = req.headers.cookie;
-    const cookies = parseCookies(cookieString!);
-
     // Retrieve state and nonce from signed cookies
-    const state = cookies.state;
-    const nonce = cookies.nonce;
+    const state = req.signedCookies.state;
+    const nonce = req.signedCookies.nonce;
 
     // Check if state is missing
     if (!state) {

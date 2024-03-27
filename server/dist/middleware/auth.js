@@ -34,15 +34,14 @@ function checkLoggedIn(req, res, next, callback) {
             // User is not logged in.
             const state = openid_client_1.generators.state();
             const nonce = openid_client_1.generators.nonce();
-            // Redirect the authorization URL to frontend
-            res.json({
-                redirectToAuth: true,
-                authorizationUrl: client.authorizationUrl({
-                    scope: client.scope,
-                    state,
-                    nonce,
-                }),
-            });
+            res
+                .cookie("state", state, secureCookieConfig)
+                .cookie("nonce", nonce, secureCookieConfig)
+                .redirect(client.authorizationUrl({
+                scope: client.scope,
+                state,
+                nonce,
+            }));
         }
     });
 }

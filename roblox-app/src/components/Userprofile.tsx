@@ -22,8 +22,6 @@ interface User {
 export const Userprofile = () => {
     const BASE_URL = "http://localhost:3000/";
     const [user, setUser] = useState<User | null>(null); // Initialize user state as null
-    const [authorizationUrl, setAuthorizationUrl] = useState<string>("");
-    const [loading, setLoading] = useState<boolean>(true); // Initialize loading state as true
 
     useEffect(() => {
         // Check if the user is signed in by sending a request to the backend
@@ -32,46 +30,22 @@ export const Userprofile = () => {
 
     async function getUser() {
         try {
-            const response = await axios.get(BASE_URL + "user/info", {
+            await axios.get(BASE_URL + "user/info", {
                 withCredentials: true, // Send cookies with the request
+            }).then((res) => {
+                // Set the user state to the response data
+                setUser(res.data.userinfo);
             });
 
-            if (response.data.redirectToAuth) {
-                // Extract state and nonce from the authorizationUrl
-                const authorizationUrl = response.data.authorizationUrl;
-                const urlParams = new URLSearchParams(authorizationUrl.split("?")[1]);
-                const state = urlParams.get("state");
-                const nonce = urlParams.get("nonce");
-
-                // Set cookies manually
-                document.cookie = `state=${state}; path=/`;
-                document.cookie = `nonce=${nonce}; path=/`;
-                // User is not signed in, set authorization URL and stop loading
-                setAuthorizationUrl(response.data.authorizationUrl);
-                setLoading(false);
-            } else {
-                // User already logged in, fetch user information and stop loading
-                setUser(response.data.userinfo); // Set user state with userinfo
-                setLoading(false);
-            }
         } catch (err) {
             console.log(err);
-            setLoading(false); // Stop loading on error
         }
     }
 
     return (
         <>
-            {loading ? ( // Show loading indicator if loading state is true
-                <div>Loading...</div>
-            ) : (
-                !user && ( // Show sign-in button if user is not signed in
-                    <button className="signin" onClick={() => window.location.href = authorizationUrl}>
-                        Sign in with Roblox
-                    </button>
-                )
-            )}
             <div>
+                <button onClick={()=>window.location.href = BASE_URL + "user/info"}>sign in</button>
                 {user && (
                     <div>
                         <p>Username: {user.preferred_username}</p>
